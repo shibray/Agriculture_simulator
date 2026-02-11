@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% set title = "AgroVision Nepal | Dashboard" %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <div>
+    <h2 class="fw-bold mb-0">Dashboard</h2>
+    <div class="text-muted small">Welcome, {{ user }} ✅</div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6 col-lg-3">
+    <div class="card card-agro h-100 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2">
+          <div class="icon-badge">📷</div>
+          <div class="fw-semibold">AI Crop Identifier</div>
+        </div>
+        <div class="text-muted small mt-2">Upload crop image → identify crop + confidence.</div>
+        <div class="badge text-bg-secondary mt-3">Phase 3</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="card card-agro h-100 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2">
+          <div class="icon-badge">📈</div>
+          <div class="fw-semibold">Growth Simulator</div>
+        </div>
+        <div class="text-muted small mt-2">Timeline chart + growth days + ideal temp/rain.</div>
+        <div class="badge text-bg-secondary mt-3">Phase 4</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="card card-agro h-100 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2">
+          <div class="icon-badge">🌦️</div>
+          <div class="fw-semibold">Weather Suitability</div>
+        </div>
+        <div class="text-muted small mt-2">OpenWeatherMap → suitability score + risk.</div>
+        <div class="badge text-bg-secondary mt-3">Phase 6</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="card card-agro h-100 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2">
+          <div class="icon-badge">💰</div>
+          <div class="fw-semibold">Fund Simulation</div>
+        </div>
+        <div class="text-muted small mt-2">Create campaigns + AI-ish risk score.</div>
+        <div class="badge text-bg-secondary mt-3">Phase 7</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

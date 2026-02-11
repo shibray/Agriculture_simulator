@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% set title = "AgroVision Nepal | Login" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-10 col-lg-8">
+    <div class="card card-agro shadow-lg">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="icon-badge">🌾</div>
+          <div>
+            <h3 class="mb-0 fw-bold">AgroVision Nepal</h3>
+            <div class="text-muted small">Login / Signup (JSON + hashed passwords)</div>
+          </div>
+        </div>
+
+        <hr class="border-secondary-subtle">
+
+        <div class="row g-4">
+          <!-- Login -->
+          <div class="col-md-6">
+            <div class="p-3 rounded-4 border border-light border-opacity-10">
+              <h5 class="fw-bold mb-3">Login</h5>
+              <form method="POST" action="{{ url_for('login') }}">
+                <div class="mb-3">
+                  <label class="form-label">Username</label>
+                  <input name="username" class="form-control" placeholder="e.g., ram_nepal" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Password</label>
+                  <input name="password" type="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div class="d-grid">
+                  <button class="btn btn-success">Login</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Signup -->
+          <div class="col-md-6">
+            <div class="p-3 rounded-4 border border-light border-opacity-10">
+              <h5 class="fw-bold mb-3">Create Account</h5>
+              <form method="POST" action="{{ url_for('signup') }}">
+                <div class="mb-3">
+                  <label class="form-label">Username</label>
+                  <input name="username" class="form-control" placeholder="min 3 chars" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Password</label>
+                  <input name="password" type="password" class="form-control" placeholder="min 4 chars" required>
+                </div>
+                <div class="d-grid">
+                  <button class="btn btn-outline-light">Sign Up</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 text-center small text-muted">
+          Next: AI crop identification + Nepal crop simulator + weather scoring.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
