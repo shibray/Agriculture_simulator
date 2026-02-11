@@ -2,64 +2,143 @@
 {% set title = "AgroVision Nepal | Dashboard" %}
 
 {% block content %}
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+
+<!-- Header -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
   <div>
     <h2 class="fw-bold mb-0">Dashboard</h2>
-    <div class="text-muted small">Welcome, {{ user }} ✅</div>
+    <div class="text-muted small">
+      Welcome back, {{ user }} 👋
+    </div>
+  </div>
+
+  <div>
+    <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">
+      Logout
+    </a>
   </div>
 </div>
 
-<div class="row g-3">
+
+<!-- Description -->
+<div class="card card-agro shadow-sm mb-4">
+  <div class="card-body">
+    <h5 class="fw-bold mb-2">AgroVision Nepal</h5>
+    <p class="text-muted small mb-0">
+      AgroVision Nepal is an AI-powered agriculture simulator that identifies crops
+      from images, evaluates soil and climate conditions, and provides intelligent
+      growth recommendations tailored for Nepal’s farming regions.
+    </p>
+  </div>
+</div>
+
+
+<!-- Feature Cards -->
+<div class="row g-4">
+
+  <!-- AI Crop Identifier -->
   <div class="col-md-6 col-lg-3">
     <div class="card card-agro h-100 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex align-items-center gap-2">
+      <div class="card-body d-flex flex-column">
+
+        <div class="d-flex align-items-center gap-2 mb-2">
           <div class="icon-badge">📷</div>
           <div class="fw-semibold">AI Crop Identifier</div>
         </div>
-        <div class="text-muted small mt-2">Upload crop image → identify crop + confidence.</div>
-        <div class="badge text-bg-secondary mt-3">Phase 3</div>
+
+        <p class="text-muted small mb-3">
+          Upload a crop image and let the AI analyze leaf texture,
+          color spectrum, and structure to identify the crop with confidence.
+        </p>
+
+        <div class="mt-auto">
+          <a class="btn btn-success btn-sm w-100" href="{{ url_for('upload_page') }}">
+            Analyze Crop →
+          </a>
+        </div>
+
       </div>
     </div>
   </div>
 
+
+  <!-- Growth Simulator -->
   <div class="col-md-6 col-lg-3">
     <div class="card card-agro h-100 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex align-items-center gap-2">
+      <div class="card-body d-flex flex-column">
+
+        <div class="d-flex align-items-center gap-2 mb-2">
           <div class="icon-badge">📈</div>
           <div class="fw-semibold">Growth Simulator</div>
         </div>
-        <div class="text-muted small mt-2">Timeline chart + growth days + ideal temp/rain.</div>
-        <div class="badge text-bg-secondary mt-3">Phase 4</div>
+
+        <p class="text-muted small mb-3">
+          Visualize crop growth duration, optimal temperature,
+          rainfall needs, and nutrient requirements.
+        </p>
+
+        <div class="mt-auto">
+          <span class="badge text-bg-secondary w-100 p-2">
+            Coming in Phase 4
+          </span>
+        </div>
+
       </div>
     </div>
   </div>
 
+
+  <!-- Weather Suitability -->
   <div class="col-md-6 col-lg-3">
     <div class="card card-agro h-100 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex align-items-center gap-2">
+      <div class="card-body d-flex flex-column">
+
+        <div class="d-flex align-items-center gap-2 mb-2">
           <div class="icon-badge">🌦️</div>
           <div class="fw-semibold">Weather Suitability</div>
         </div>
-        <div class="text-muted small mt-2">OpenWeatherMap → suitability score + risk.</div>
-        <div class="badge text-bg-secondary mt-3">Phase 6</div>
+
+        <p class="text-muted small mb-3">
+          Compare real-time weather data with optimal crop
+          conditions and calculate suitability scores.
+        </p>
+
+        <div class="mt-auto">
+          <span class="badge text-bg-secondary w-100 p-2">
+            Phase 6
+          </span>
+        </div>
+
       </div>
     </div>
   </div>
 
+
+  <!-- Fund Simulation -->
   <div class="col-md-6 col-lg-3">
     <div class="card card-agro h-100 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex align-items-center gap-2">
+      <div class="card-body d-flex flex-column">
+
+        <div class="d-flex align-items-center gap-2 mb-2">
           <div class="icon-badge">💰</div>
           <div class="fw-semibold">Fund Simulation</div>
         </div>
-        <div class="text-muted small mt-2">Create campaigns + AI-ish risk score.</div>
-        <div class="badge text-bg-secondary mt-3">Phase 7</div>
+
+        <p class="text-muted small mb-3">
+          Create farming campaigns, simulate funding progress,
+          and evaluate risk factors using AI text analysis.
+        </p>
+
+        <div class="mt-auto">
+          <span class="badge text-bg-secondary w-100 p-2">
+            Phase 7
+          </span>
+        </div>
+
       </div>
     </div>
   </div>
+
 </div>
+
 {% endblock %}

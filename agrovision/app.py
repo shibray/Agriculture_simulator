@@ -2,142 +2,175 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict, Any
 
-from flask import (
-    Flask, render_template, request, redirect, url_for,
-    session, flash
-)
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
+from models import db, User
+from ai_crop import predict_crop
 
-# ----------------------------
-# Paths / App setup
-# ----------------------------
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-USERS_FILE = DATA_DIR / "users.json"
-
-app = Flask(__name__)
-app.secret_key = "agrovision_dev_secret_change_me"  # for hackathon; can set env later
-
-DATA_DIR.mkdir(exist_ok=True)
 
 
-# ----------------------------
-# JSON Helpers
-# ----------------------------
-def load_json(path: Path, default: Dict[str, Any]) -> Dict[str, Any]:
-    if not path.exists():
-        path.write_text(json.dumps(default, indent=2), encoding="utf-8")
-        return default
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        # If file gets corrupted during hackathon, recover safely
-        path.write_text(json.dumps(default, indent=2), encoding="utf-8")
-        return default
+def create_app() -> Flask:
+    app = Flask(__name__)
+    app.secret_key = "agrovision_dev_secret_change_me"
 
+    # ----------------------------
+    # Database (SQLite)
+    # ----------------------------
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{BASE_DIR / 'agrovision.db'}"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-def save_json(path: Path, data: Dict[str, Any]) -> None:
-    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    # ----------------------------
+    # Upload config
+    # ----------------------------
+    upload_dir = BASE_DIR / "static" / "uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    app.config["UPLOAD_FOLDER"] = str(upload_dir)
+    app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024  # 6MB
 
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
 
-def get_users():
-    return load_json(USERS_FILE, {"users": []})
+    # ----------------------------
+    # Helpers
+    # ----------------------------
+    def is_logged_in() -> bool:
+        return bool(session.get("user_id"))
 
+    def load_crop_data() -> dict:
+        path = BASE_DIR / "data" / "crop_data.json"
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
 
-def find_user(username: str):
-    db = get_users()
-    for u in db["users"]:
-        if u["username"].lower() == username.lower():
-            return u
-    return None
+    # ----------------------------
+    # Auth Routes
+    # ----------------------------
+    @app.get("/")
+    def index():
+        if is_logged_in():
+            return redirect(url_for("dashboard"))
+        return render_template("index.html")
 
+    @app.post("/signup")
+    def signup():
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
 
-# ----------------------------
-# Auth guard
-# ----------------------------
-def login_required():
-    return "user" in session
-
-
-# ----------------------------
-# Routes
-# ----------------------------
-@app.get("/")
-def index():
-    # If already logged in, jump to dashboard
-    if login_required():
-        return redirect(url_for("dashboard"))
-    return render_template("index.html")
-
-
-@app.post("/signup")
-def signup():
-    username = request.form.get("username", "").strip()
-    password = request.form.get("password", "").strip()
-
-    if len(username) < 3:
-        flash("Username must be at least 3 characters.", "danger")
-        return redirect(url_for("index"))
-
-    if len(password) < 4:
-        flash("Password must be at least 4 characters.", "danger")
-        return redirect(url_for("index"))
-
-    db = get_users()
-
-    # Check existing
-    for u in db["users"]:
-        if u["username"].lower() == username.lower():
-            flash("Username already exists. Try a different one.", "warning")
+        if len(username) < 3:
+            flash("Username must be at least 3 characters.", "danger")
             return redirect(url_for("index"))
 
-    db["users"].append({
-        "username": username,
-        "password_hash": generate_password_hash(password)
-    })
-    save_json(USERS_FILE, db)
+        if len(password) < 4:
+            flash("Password must be at least 4 characters.", "danger")
+            return redirect(url_for("index"))
 
-    flash("Account created! Now login.", "success")
-    return redirect(url_for("index"))
+        if User.query.filter_by(username=username).first():
+            flash("Username already exists.", "warning")
+            return redirect(url_for("index"))
 
+        user = User(username=username, password_hash=generate_password_hash(password))
+        db.session.add(user)
+        db.session.commit()
 
-@app.post("/login")
-def login():
-    username = request.form.get("username", "").strip()
-    password = request.form.get("password", "").strip()
-
-    user = find_user(username)
-    if not user:
-        flash("User not found. Please sign up first.", "danger")
+        flash("Account created. Please login.", "success")
         return redirect(url_for("index"))
 
-    if not check_password_hash(user["password_hash"], password):
-        flash("Wrong password. Try again.", "danger")
+    @app.post("/login")
+    def login():
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            flash("User not found. Please sign up first.", "danger")
+            return redirect(url_for("index"))
+
+        if not check_password_hash(user.password_hash, password):
+            flash("Wrong password.", "danger")
+            return redirect(url_for("index"))
+
+        session["user_id"] = user.id
+        session["username"] = user.username
+        flash("Logged in ✅", "success")
+        return redirect(url_for("dashboard"))
+
+    @app.get("/logout")
+    def logout():
+        session.clear()
+        flash("Logged out.", "info")
         return redirect(url_for("index"))
 
-    session["user"] = user["username"]
-    flash("Logged in successfully ✅", "success")
-    return redirect(url_for("dashboard"))
+    # ----------------------------
+    # App Routes
+    # ----------------------------
+    @app.get("/dashboard")
+    def dashboard():
+        if not is_logged_in():
+            flash("Please login first.", "warning")
+            return redirect(url_for("index"))
+        return render_template("dashboard.html", user=session.get("username"))
 
+    # ----------------------------
+    # Phase 3: Upload + Identify
+    # ----------------------------
+    @app.get("/upload")
+    def upload_page():
+        if not is_logged_in():
+            flash("Please login first.", "warning")
+            return redirect(url_for("index"))
+        return render_template("upload.html", result=None)
 
-@app.get("/dashboard")
-def dashboard():
-    if not login_required():
-        flash("Please login first.", "warning")
-        return redirect(url_for("index"))
+    @app.post("/identify")
+    def identify_crop():
+        if not is_logged_in():
+            flash("Please login first.", "warning")
+            return redirect(url_for("index"))
 
-    return render_template("dashboard.html", user=session.get("user"))
+        f = request.files.get("image")
+        if not f or not f.filename:
+            flash("Please choose an image file.", "danger")
+            return redirect(url_for("upload_page"))
 
+        filename = secure_filename(f.filename)
+        save_path = Path(app.config["UPLOAD_FOLDER"]) / filename
+        f.save(save_path)
 
-@app.get("/logout")
-def logout():
-    session.clear()
-    flash("Logged out.", "info")
-    return redirect(url_for("index"))
+        # Real inference (MobileNetV2)
+        res = predict_crop(str(save_path))
+
+        result = {
+            "crop": res.crop,
+            "scientific": res.scientific,
+            "confidence": res.confidence,
+            "raw_label": res.raw_label,
+            "image_url": url_for("static", filename=f"uploads/{filename}")
+        }
+        return render_template("upload.html", result=result)
+
+    # ----------------------------
+    # Phase 4: Growth Simulator
+    # ----------------------------
+    @app.get("/growth/<crop_name>")
+    def growth(crop_name: str):
+        if not is_logged_in():
+            flash("Please login first.", "warning")
+            return redirect(url_for("index"))
+
+        crops = load_crop_data()
+        crop = crops.get(crop_name)
+
+        if not crop:
+            flash("Crop data not found for this crop.", "danger")
+            return redirect(url_for("upload_page"))
+
+        return render_template("growth.html", crop_name=crop_name, crop=crop)
+
+    return app
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    create_app().run(debug=True)

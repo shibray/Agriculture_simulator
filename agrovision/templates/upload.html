@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+{% set title = "AgroVision Nepal | Crop Identifier" %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <div>
+    <h2 class="fw-bold mb-0">AI Crop Identifier</h2>
+    <div class="text-muted small">Upload a crop photo (leaf/plant) — AI will analyze it.</div>
+  </div>
+  <a class="btn btn-outline-light" href="{{ url_for('dashboard') }}">← Back</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card card-agro shadow-sm">
+      <div class="card-body">
+        <form id="uploadForm" method="POST" action="{{ url_for('identify_crop') }}" enctype="multipart/form-data">
+          <label class="form-label fw-semibold">Upload crop image</label>
+          <input class="form-control" type="file" name="image" accept="image/*" required>
+
+          <div class="d-grid mt-3">
+            <button class="btn btn-success" type="submit">
+              Analyze Crop
+            </button>
+          </div>
+        </form>
+
+        <!-- Fake-but-realistic analyzing UI -->
+        <div id="analyzingBox" class="mt-4 d-none">
+          <div class="d-flex align-items-center gap-2">
+            <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+            <div class="fw-semibold">AI analyzing…</div>
+          </div>
+          <div class="progress mt-2" style="height: 10px;">
+            <div id="analyzeBar" class="progress-bar bg-success" style="width: 0%"></div>
+          </div>
+          <div class="text-muted small mt-2">Checking leaf texture, color, and structure…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card card-agro shadow-sm h-100">
+      <div class="card-body">
+        {% if result %}
+          <h5 class="fw-bold mb-2">Result</h5>
+
+          <div class="mb-2">
+            <span class="badge text-bg-success">Crop</span>
+            <span class="ms-2 fw-semibold">{{ result.crop }}</span>
+          </div>
+
+          <div class="mb-2">
+            <span class="badge text-bg-secondary">Scientific</span>
+            <span class="ms-2">{{ result.scientific }}</span>
+          </div>
+
+          <div class="mb-2">
+            <span class="badge text-bg-info">Confidence</span>
+            <span class="ms-2">{{ result.confidence }}%</span>
+          </div>
+
+          <hr class="border-secondary-subtle">
+
+          <div class="small text-muted">
+            <div class="fw-semibold text-light mb-1">Why the AI decided this:</div>
+            <ul class="mb-0">
+              <li>Texture patterns matched common crop foliage.</li>
+              <li>Dominant green spectrum and vein structure detected.</li>
+              <li>Closest ImageNet label: <span class="text-light">{{ result.raw_label }}</span></li>
+            </ul>
+          </div>
+
+          {% if result.image_url %}
+            <div class="mt-3">
+              <img src="{{ result.image_url }}" class="img-fluid rounded-3 border border-light border-opacity-10">
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="text-muted">
+            Upload an image to see the AI identification result here.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Human-looking UX: show analyzing animation before submit completes
+  const form = document.getElementById("uploadForm");
+  const box = document.getElementById("analyzingBox");
+  const bar = document.getElementById("analyzeBar");
+
+  if (form) {
+    form.addEventListener("submit", () => {
+      box.classList.remove("d-none");
+      let p = 0;
+      const t = setInterval(() => {
+        p += Math.floor(Math.random() * 12) + 6;
+        if (p >= 100) { p = 100; clearInterval(t); }
+        bar.style.width = p + "%";
+      }, 120);
+    });
+  }
+</script>
+{% endblock %}

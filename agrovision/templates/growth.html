@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+{% set title = "AgroVision Nepal | Growth Simulator" %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <div>
+    <h2 class="fw-bold mb-0">Growth Simulator</h2>
+    <div class="text-muted small">Crop plan generated from dataset + growth timeline visualization.</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-light btn-sm" href="{{ url_for('upload_page') }}">← Back</a>
+    <a class="btn btn-success btn-sm" href="{{ url_for('dashboard') }}">Dashboard</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Info -->
+  <div class="col-lg-5">
+    <div class="card card-agro shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="icon-badge">🌱</div>
+          <div>
+            <div class="fw-bold fs-5">{{ crop_name }}</div>
+            <div class="text-muted small">{{ crop.scientific }}</div>
+          </div>
+        </div>
+
+        <hr class="border-secondary-subtle">
+
+        <div class="row g-2 small">
+          <div class="col-12">
+            <div class="p-3 rounded-4 border border-light border-opacity-10">
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Growth Duration</span>
+                <span class="fw-semibold">{{ crop.growth_days }} days</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="p-3 rounded-4 border border-light border-opacity-10">
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Optimal Temperature</span>
+                <span class="fw-semibold">🌡 {{ crop.optimal_temp }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="p-3 rounded-4 border border-light border-opacity-10">
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Rainfall Requirement</span>
+                <span class="fw-semibold">💧 {{ crop.rainfall }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="p-3 rounded-4 border border-light border-opacity-10">
+              <div class="text-muted mb-1">Soil Suitability</div>
+              <div class="fw-semibold">
+                {% for s in crop.soil %}
+                  <span class="badge text-bg-success me-1">{{ s }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="p-3 rounded-4 border border-light border-opacity-10">
+              <div class="text-muted mb-2">Nutrient Requirement (NPK)</div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge text-bg-info">N: {{ crop.nutrients.Nitrogen }}</span>
+                <span class="badge text-bg-info">P: {{ crop.nutrients.Phosphorus }}</span>
+                <span class="badge text-bg-info">K: {{ crop.nutrients.Potassium }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-secondary-subtle">
+
+        <div class="small text-muted">
+          <div class="fw-semibold text-light mb-1">Simulation Note:</div>
+          Growth timeline is a staged model (Germination → Vegetative → Flowering → Harvest) based on duration.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="col-lg-7">
+    <div class="card card-agro shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="fw-bold">Growth Timeline</div>
+          <div class="text-muted small">Day-by-day progress</div>
+        </div>
+
+        <canvas id="growthChart" height="120"></canvas>
+
+        <div class="mt-3 small text-muted">
+          <span class="fw-semibold text-light">Stages:</span>
+          Germination (0–15%), Vegetative (15–55%), Flowering (55–80%), Harvest (80–100%)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const totalDays = Number("{{ crop.growth_days }}");
+  const labels = Array.from({length: totalDays + 1}, (_, i) => i);
+
+  // Fake "growth curve" for demo (smooth, looks real)
+  const values = labels.map(d => {
+    const x = d / totalDays;
+    // smooth curve: fast in middle, slower at start/end
+    const y = 1 / (1 + Math.exp(-10 * (x - 0.5)));
+    return Math.round(y * 100);
+  });
+
+  const ctx = document.getElementById("growthChart");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Growth Progress (%)",
+        data: values,
+        tension: 0.35,
+        borderWidth: 3,
+        pointRadius: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: "Days" },
+          ticks: { maxTicksLimit: 10 }
+        },
+        y: {
+          min: 0,
+          max: 100,
+          title: { display: true, text: "Progress (%)" }
+        }
+      },
+      animation: {
+        duration: 1200
+      }
+    }
+  });
+</script>
+{% endblock %}
