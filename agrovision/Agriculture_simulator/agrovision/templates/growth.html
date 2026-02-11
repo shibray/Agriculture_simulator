@@ -1,0 +1,290 @@
+{% extends "layout.html" %}
+{% set title = "AgroVision Nepal | Growth Simulator" %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <div>
+    <h2 class="fw-bold mb-0">Growth Simulator</h2>
+    <div class="text-muted small">
+      Intelligent crop planning based on dataset and growth modeling.
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-light btn-sm" href="{{ url_for('upload_page') }}">← Back</a>
+    <a class="btn btn-success btn-sm" href="{{ url_for('dashboard') }}">Dashboard</a>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- LEFT: Crop Info + Soil + Weather -->
+  <div class="col-lg-5">
+    <div class="card card-agro shadow-sm">
+      <div class="card-body">
+
+        <!-- Crop Title -->
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="icon-badge">🌱</div>
+          <div>
+            <div class="fw-bold fs-5">{{ crop_name }}</div>
+            <div class="text-muted small">{{ crop.scientific }}</div>
+          </div>
+        </div>
+
+        <hr class="border-secondary-subtle">
+
+        <!-- Crop Details -->
+        <div class="mb-3 small">
+          <div class="p-3 rounded-4 border border-light border-opacity-10 mb-2">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Growth Duration</span>
+              <span class="fw-semibold">{{ crop.growth_days }} days</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-4 border border-light border-opacity-10 mb-2">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Optimal Temperature</span>
+              <span class="fw-semibold">🌡 {{ crop.optimal_temp }}</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-4 border border-light border-opacity-10 mb-2">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Rainfall Requirement</span>
+              <span class="fw-semibold">💧 {{ crop.rainfall }}</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-4 border border-light border-opacity-10 mb-2">
+            <div class="text-muted mb-1">Soil Suitability</div>
+            {% for s in crop.soil %}
+              <span class="badge text-bg-success me-1">{{ s }}</span>
+            {% endfor %}
+          </div>
+
+          <div class="p-3 rounded-4 border border-light border-opacity-10">
+            <div class="text-muted mb-1">Nutrient Requirement (NPK)</div>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge text-bg-info">N: {{ crop.nutrients.Nitrogen }}</span>
+              <span class="badge text-bg-info">P: {{ crop.nutrients.Phosphorus }}</span>
+              <span class="badge text-bg-info">K: {{ crop.nutrients.Potassium }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Soil & Nutrient Check -->
+        <hr class="border-secondary-subtle">
+        <h6 class="fw-bold mb-2">Soil & Nutrient Check</h6>
+
+        <form method="POST" action="{{ url_for('soil_check', crop_name=crop_name) }}">
+          <div class="row g-2 small">
+            <div class="col-md-6">
+              <label class="form-label">Soil Type</label>
+              <select name="soil_type" class="form-select form-select-sm" required>
+                <option value="">Select soil</option>
+                <option>Sandy</option>
+                <option>Loamy</option>
+                <option>Clay</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Nutrient Level</label>
+              <select name="nutrient_level" class="form-select form-select-sm" required>
+                <option value="">Select level</option>
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+              </select>
+            </div>
+
+            <div class="col-12 d-grid mt-2">
+              <button class="btn btn-success btn-sm">Analyze Suitability</button>
+            </div>
+          </div>
+        </form>
+
+        {% if recommendation %}
+          <hr class="border-secondary-subtle">
+          <div class="small">
+            <div class="fw-semibold mb-1">Suitability Result:</div>
+            <div class="mb-2">
+              <span class="badge text-bg-{{ recommendation.color }}">
+                {{ recommendation.status }}
+              </span>
+            </div>
+            <div class="text-muted">{{ recommendation.message }}</div>
+          </div>
+        {% endif %}
+
+        <!-- Weather Suitability -->
+        <hr class="border-secondary-subtle">
+        <h6 class="fw-bold mb-2">Weather Suitability (Real-Time)</h6>
+
+        <form method="POST" action="{{ url_for('weather_check', crop_name=crop_name) }}">
+          <div class="row g-2 small">
+
+            <div class="col-md-6">
+              <label class="form-label">Region</label>
+              <select name="region" class="form-select form-select-sm" required>
+                <option value="">Select region</option>
+                <option value="Terai">Terai</option>
+                <option value="Hill">Hill</option>
+                <option value="Mountain">Mountain</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">City</label>
+              <select name="city" class="form-select form-select-sm" required>
+                <option value="">Select city</option>
+                <option value="Kathmandu">Kathmandu</option>
+                <option value="Biratnagar">Biratnagar</option>
+                <option value="Pokhara">Pokhara</option>
+                <option value="Nepalgunj">Nepalgunj</option>
+                <option value="Dhangadhi">Dhangadhi</option>
+                <option value="Jomsom">Jomsom</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Soil Type</label>
+              <select name="soil_type" class="form-select form-select-sm" required>
+                <option value="">Select soil</option>
+                <option>Sandy</option>
+                <option>Loamy</option>
+                <option>Clay</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Nutrient Level</label>
+              <select name="nutrient_level" class="form-select form-select-sm" required>
+                <option value="">Select level</option>
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+              </select>
+            </div>
+
+            <div class="col-12 d-grid mt-2">
+              <button class="btn btn-success btn-sm">Check Weather & Score</button>
+            </div>
+
+          </div>
+        </form>
+
+        {% if weather_result %}
+          <hr class="border-secondary-subtle">
+
+          <div class="small">
+            <div class="d-flex justify-content-between">
+              <div class="fw-semibold">Live Weather</div>
+              <span class="badge text-bg-secondary">{{ weather_result.city }} • {{ weather_result.region }}</span>
+            </div>
+
+            <div class="text-muted mt-2">
+              🌡 Temperature: <span class="text-light">{{ weather_result.temp_c }}°C</span><br>
+              ☁ Condition: <span class="text-light">{{ weather_result.condition }}</span>
+            </div>
+
+            <div class="mt-3">
+              <div class="fw-semibold">Suitability Score</div>
+
+              <div class="progress mt-2" style="height: 10px;">
+                <div class="progress-bar bg-success" data-score="{{ weather_result.total_score }}"></div>
+
+
+              <div class="mt-2">
+                <span class="badge text-bg-{{ weather_result.risk_color }}">{{ weather_result.risk_label }}</span>
+                <span class="ms-2 text-muted">
+                  Final Score: <strong>{{ weather_result.total_score }}%</strong>
+                </span>
+              </div>
+            </div>
+
+            <hr class="border-secondary-subtle">
+
+            <div class="fw-semibold">Score Breakdown</div>
+            <ul class="text-muted mb-0">
+              <li>Weather (40%): {{ weather_result.breakdown.weather }}%</li>
+              <li>Soil (30%): {{ weather_result.breakdown.soil }}%</li>
+              <li>Nutrient (20%): {{ weather_result.breakdown.nutrient }}%</li>
+              <li>Water Proxy (10%): {{ weather_result.breakdown.water }}%</li>
+            </ul>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Chart -->
+  <div class="col-lg-7">
+    <div class="card card-agro shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <div class="fw-bold">Growth Timeline</div>
+          <div class="text-muted small">Day-by-day progression</div>
+        </div>
+
+        <canvas id="growthChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const totalDays = Number("{{ crop.growth_days }}");
+  const labels = Array.from({length: totalDays + 1}, (_, i) => i);
+
+  const values = labels.map(d => {
+    const x = d / totalDays;
+    const y = 1 / (1 + Math.exp(-10 * (x - 0.5)));
+    return Math.round(y * 100);
+  });
+
+  const ctx = document.getElementById("growthChart");
+
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Growth Progress (%)",
+        data: values,
+        tension: 0.35,
+        borderWidth: 3,
+        pointRadius: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          title: { display: true, text: "Days" },
+          ticks: { maxTicksLimit: 10 }
+        },
+        y: {
+          min: 0,
+          max: 100,
+          title: { display: true, text: "Progress (%)" }
+        }
+      },
+      animation: { duration: 1200 }
+    }
+  });
+</script>
+<script>
+  document.querySelectorAll(".progress-bar[data-score]").forEach(el => {
+    const score = Number(el.dataset.score || "0");
+    el.style.width = Math.max(0, Math.min(100, score)) + "%";
+  });
+</script>
+
+{% endblock %}

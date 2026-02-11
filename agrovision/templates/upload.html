@@ -1,65 +1,49 @@
 {% extends "layout.html" %}
-{% set title = "AgroVision Nepal | Crop Identifier" %}
+{% set title = "AgroVision Nepal | AI Crop Identifier" %}
 
 {% block content %}
 
-<!-- Header -->
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+<div class="d-flex align-items-center justify-content-between mb-4">
   <div>
     <h2 class="fw-bold mb-0">AI Crop Identifier</h2>
     <div class="text-muted small">
-      Upload a crop image and let AI analyze leaf texture, color spectrum, and structure.
+      Upload a crop image and let AI analyze leaf texture, structure & color.
     </div>
   </div>
-
-  <a class="btn btn-outline-light btn-sm" href="{{ url_for('dashboard') }}">
-    ← Dashboard
-  </a>
+  <a class="btn btn-outline-light btn-sm" href="{{ url_for('dashboard') }}">← Dashboard</a>
 </div>
-
 
 <div class="row g-4">
 
-  <!-- LEFT: Upload Form -->
-  <div class="col-lg-6">
+  <!-- LEFT: Upload -->
+  <div class="col-lg-5">
     <div class="card card-agro shadow-sm">
       <div class="card-body">
+
+        <h6 class="fw-bold mb-3">Upload Crop Image</h6>
 
         <form id="uploadForm"
               method="POST"
               action="{{ url_for('identify_crop') }}"
               enctype="multipart/form-data">
 
-          <label class="form-label fw-semibold">Upload Crop Image</label>
-          <input class="form-control"
-                 type="file"
-                 name="image"
-                 accept="image/*"
-                 required>
-
-          <div class="d-grid mt-3">
-            <button class="btn btn-success">
-              Analyze Crop
-            </button>
+          <div class="mb-3">
+            <input class="form-control" type="file" name="image" accept="image/*" required>
+            <div class="text-muted small mt-2">
+              Best results: close leaf photo, good light, plain background.
+            </div>
           </div>
 
+          <div class="d-grid">
+            <button class="btn btn-success" type="submit">Analyze Image</button>
+          </div>
         </form>
 
-        <!-- AI Analyzing Animation -->
-        <div id="analyzingBox" class="mt-4 d-none">
-          <div class="d-flex align-items-center gap-2">
-            <div class="spinner-border spinner-border-sm text-success"></div>
-            <div class="fw-semibold">AI analyzing...</div>
-          </div>
-
+        <div id="loadingSpinner" class="text-center mt-4 d-none">
+          <div class="spinner-border text-success" role="status"></div>
+          <div class="small text-muted mt-2">AI analyzing…</div>
           <div class="progress mt-2" style="height: 8px;">
-            <div id="analyzeBar"
-                 class="progress-bar bg-success"
-                 style="width: 0%"></div>
-          </div>
-
-          <div class="text-muted small mt-2">
-            Detecting patterns and comparing with trained dataset...
+            <div id="analyzeBar" class="progress-bar bg-success" style="width: 0%;"></div>
           </div>
         </div>
 
@@ -67,92 +51,127 @@
     </div>
   </div>
 
-
   <!-- RIGHT: Result -->
-  <div class="col-lg-6">
-    <div class="card card-agro shadow-sm h-100">
-      <div class="card-body">
+  <div class="col-lg-7">
 
-        {% if result %}
+    {% if result %}
+      {% set conf = result.confidence if result.confidence is not none else 0 %}
 
-          <h5 class="fw-bold mb-3">Identification Result</h5>
+      <div class="card card-agro shadow-sm">
+        <div class="card-body">
 
-          <div class="mb-2">
-            <span class="badge text-bg-success">Crop</span>
-            <span class="ms-2 fw-semibold">{{ result.crop }}</span>
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge">🤖</div>
+            <div class="fw-semibold">AI Analysis Result</div>
           </div>
 
-          <div class="mb-2">
-            <span class="badge text-bg-secondary">Scientific Name</span>
-            <span class="ms-2">{{ result.scientific }}</span>
-          </div>
-
-          <div class="mb-3">
-            <span class="badge text-bg-info">Confidence</span>
-            <span class="ms-2">{{ result.confidence }}%</span>
-          </div>
-
-          <!-- View Growth Plan Button -->
-          <div class="d-grid mb-3">
-            <a class="btn btn-success"
-               href="{{ url_for('growth', crop_name=result.crop) }}">
-              View Growth Plan →
-            </a>
-          </div>
-
-          <!-- Image Preview -->
           {% if result.image_url %}
-            <img src="{{ result.image_url }}"
-                 class="img-fluid rounded-3 border border-light border-opacity-10">
+            <div class="mb-3 text-center">
+              <img src="{{ result.image_url }}"
+                   class="img-fluid rounded-4 border border-light border-opacity-10"
+                   style="max-height: 240px;">
+            </div>
           {% endif %}
 
-          <hr class="border-secondary-subtle">
-
-          <div class="small text-muted">
-            <div class="fw-semibold text-light mb-1">
-              How AI made this decision:
+          {% if result.is_plant == false %}
+            <div class="alert alert-warning mb-0">
+              This image does not strongly resemble a crop/leaf.
+              Please upload a clearer plant image (close leaf photo, good light).
             </div>
-            <ul class="mb-0">
-              <li>Analyzed leaf structure and vein patterns.</li>
-              <li>Compared color spectrum to trained dataset.</li>
-              <li>Closest ImageNet match: {{ result.raw_label }}</li>
-            </ul>
-          </div>
 
-        {% else %}
-          <div class="text-muted">
-            Upload an image to see AI prediction results here.
-          </div>
-        {% endif %}
+          {% else %}
 
+            <div class="mb-2">
+              <div class="fw-bold fs-5">Detected Crop: {{ result.crop }}</div>
+              <div class="text-muted small">Scientific Name: {{ result.scientific }}</div>
+            </div>
+
+            <div class="mb-2 small text-muted">
+              Model Label: {{ result.raw_label }}
+            </div>
+
+            <div class="mb-3">
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-success" style="width: {{ conf }}%;"></div>
+              </div>
+              <div class="small text-muted mt-1">Confidence: {{ conf }}%</div>
+            </div>
+
+            {% if result.suggestions %}
+              <div class="mb-3">
+                <div class="small text-muted mb-1">Suggested Crops:</div>
+                {% for s in result.suggestions %}
+                  <span class="badge text-bg-secondary me-1">{{ s }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <!-- ✅ If confidence is low, ask user to confirm (demo-safe, product-like) -->
+            {% if conf < 35 %}
+              <div class="alert alert-warning mt-3">
+                AI is not fully confident. Please confirm the crop to continue.
+              </div>
+
+              <form method="POST" action="{{ url_for('confirm_crop') }}">
+                <div class="input-group">
+                  <select class="form-select" name="crop_name" required>
+                    <option value="">Confirm crop</option>
+                    <option>Rice</option>
+                    <option>Wheat</option>
+                    <option>Maize</option>
+                    <option>Potato</option>
+                    <option>Tomato</option>
+                  </select>
+                  <button class="btn btn-success" type="submit">Confirm</button>
+                </div>
+                <div class="text-muted small mt-2">
+                  This improves accuracy in real deployments using farmer feedback.
+                </div>
+              </form>
+
+            {% else %}
+
+              <div class="d-grid mt-3">
+                <a class="btn btn-success" href="{{ url_for('growth', crop_name=result.crop) }}">
+                  View Growth Plan →
+                </a>
+              </div>
+
+            {% endif %}
+
+          {% endif %}
+
+        </div>
       </div>
-    </div>
-  </div>
 
+    {% else %}
+
+      <div class="card card-agro shadow-sm">
+        <div class="card-body text-muted">
+          Upload an image to see AI prediction results here.
+        </div>
+      </div>
+
+    {% endif %}
+
+  </div>
 </div>
 
-
-<!-- Script for Analyzing Animation -->
 <script>
   const form = document.getElementById("uploadForm");
-  const box = document.getElementById("analyzingBox");
+  const spinner = document.getElementById("loadingSpinner");
   const bar = document.getElementById("analyzeBar");
 
-  if (form) {
-    form.addEventListener("submit", () => {
-      box.classList.remove("d-none");
+  form?.addEventListener("submit", () => {
+    spinner.classList.remove("d-none");
 
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.floor(Math.random() * 10) + 5;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-        }
-        bar.style.width = progress + "%";
-      }, 120);
-    });
-  }
+    let p = 0;
+    const t = setInterval(() => {
+      p += Math.floor(Math.random() * 12) + 6;
+      if (p >= 100) { p = 100; clearInterval(t); }
+      if (bar) bar.style.width = p + "%";
+    }, 120);
+  });
 </script>
 
 {% endblock %}

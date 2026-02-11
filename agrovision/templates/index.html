@@ -3,66 +3,149 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-10 col-lg-8">
+  <div class="col-lg-8 col-xl-7">
+
     <div class="card card-agro shadow-lg">
-      <div class="card-body p-4">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <div class="icon-badge">🌾</div>
+      <div class="card-body p-4 p-md-5">
+
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="icon-badge">🌿</div>
           <div>
-            <h3 class="mb-0 fw-bold">AgroVision Nepal</h3>
-            <div class="text-muted small">Login / Signup (JSON + hashed passwords)</div>
+            <h3 class="fw-bold mb-0">AgroVision Nepal</h3>
+            <div class="text-muted small">Farmer access portal</div>
           </div>
         </div>
 
         <hr class="border-secondary-subtle">
 
-        <div class="row g-4">
-          <!-- Login -->
-          <div class="col-md-6">
-            <div class="p-3 rounded-4 border border-light border-opacity-10">
-              <h5 class="fw-bold mb-3">Login</h5>
-              <form method="POST" action="{{ url_for('login') }}">
-                <div class="mb-3">
-                  <label class="form-label">Username</label>
-                  <input name="username" class="form-control" placeholder="e.g., ram_nepal" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Password</label>
-                  <input name="password" type="password" class="form-control" placeholder="••••••••" required>
-                </div>
-                <div class="d-grid">
-                  <button class="btn btn-success">Login</button>
-                </div>
-              </form>
-            </div>
-          </div>
+        <!-- LOGIN PANEL -->
+        <div id="loginPanel">
+          <h5 class="fw-bold mb-3">Login</h5>
 
-          <!-- Signup -->
-          <div class="col-md-6">
-            <div class="p-3 rounded-4 border border-light border-opacity-10">
-              <h5 class="fw-bold mb-3">Create Account</h5>
-              <form method="POST" action="{{ url_for('signup') }}">
-                <div class="mb-3">
-                  <label class="form-label">Username</label>
-                  <input name="username" class="form-control" placeholder="min 3 chars" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Password</label>
-                  <input name="password" type="password" class="form-control" placeholder="min 4 chars" required>
-                </div>
-                <div class="d-grid">
-                  <button class="btn btn-outline-light">Sign Up</button>
-                </div>
-              </form>
+          <form method="POST" action="{{ url_for('login') }}">
+            <div class="mb-3">
+              <label class="form-label small">Username</label>
+              <input class="form-control" name="username" required autocomplete="username">
             </div>
+
+            <div class="mb-3">
+              <label class="form-label small">Password</label>
+              <input type="password" class="form-control" name="password" required autocomplete="current-password">
+            </div>
+
+            <div class="d-grid">
+              <button class="btn btn-success">Login</button>
+            </div>
+          </form>
+
+          <div class="text-muted small mt-3">
+            Don’t have an account?
+            <a href="#" id="showSignup" class="link-light fw-semibold">Create one</a>
           </div>
         </div>
 
-        <div class="mt-4 text-center small text-muted">
-          Next: AI crop identification + Nepal crop simulator + weather scoring.
+        <!-- SIGNUP PANEL (hidden by default) -->
+        <div id="signupPanel" class="d-none">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h5 class="fw-bold mb-0">Create Farmer Account</h5>
+            <a href="#" id="showLogin" class="link-light small">← Back to login</a>
+          </div>
+
+          <div class="text-muted small mb-3">
+            This profile helps tailor crop suitability recommendations for Nepal.
+          </div>
+
+          <form method="POST" action="{{ url_for('signup') }}">
+            <div class="row g-2">
+
+              <div class="col-md-6">
+                <label class="form-label small">Full Name</label>
+                <input class="form-control" name="full_name" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small">Phone</label>
+                <input class="form-control" name="phone" required placeholder="98XXXXXXXX">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small">Username</label>
+                <input class="form-control" name="username" required autocomplete="username">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small">Password</label>
+                <input type="password" class="form-control" name="password" required autocomplete="new-password">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small">Province</label>
+                <select class="form-select" name="province" required>
+                  <option value="">Select</option>
+                  <option>Koshi</option>
+                  <option>Madhesh</option>
+                  <option>Bagmati</option>
+                  <option>Gandaki</option>
+                  <option>Lumbini</option>
+                  <option>Karnali</option>
+                  <option>Sudurpashchim</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small">District</label>
+                <input class="form-control" name="district" required>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small">Municipality</label>
+                <input class="form-control" name="municipality" required>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small">Farm Size (Ropani)</label>
+                <input class="form-control" name="farm_size_ropani" type="number" step="0.1" min="0">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small">Experience (Years)</label>
+                <input class="form-control" name="experience_years" type="number" min="0" max="80">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small">Primary Crops</label>
+                <input class="form-control" name="primary_crops" placeholder="Rice, Maize">
+              </div>
+
+              <div class="col-12 d-grid mt-2">
+                <button class="btn btn-outline-light">Create Account</button>
+              </div>
+            </div>
+          </form>
         </div>
+
       </div>
     </div>
+
   </div>
 </div>
+
+<script>
+  const loginPanel = document.getElementById("loginPanel");
+  const signupPanel = document.getElementById("signupPanel");
+  const showSignup = document.getElementById("showSignup");
+  const showLogin = document.getElementById("showLogin");
+
+  showSignup?.addEventListener("click", (e) => {
+    e.preventDefault();
+    loginPanel.classList.add("d-none");
+    signupPanel.classList.remove("d-none");
+  });
+
+  showLogin?.addEventListener("click", (e) => {
+    e.preventDefault();
+    signupPanel.classList.add("d-none");
+    loginPanel.classList.remove("d-none");
+  });
+</script>
 {% endblock %}

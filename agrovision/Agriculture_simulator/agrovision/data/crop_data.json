@@ -1,0 +1,62 @@
+{
+  "Rice": {
+    "scientific": "Oryza sativa",
+    "growth_days": 120,
+    "optimal_temp": "20–35°C",
+    "rainfall": "1000–2000 mm",
+    "soil": ["Clay", "Loamy"],
+    "nutrients": {
+      "Nitrogen": "High",
+      "Phosphorus": "Medium",
+      "Potassium": "Medium"
+    }
+  },
+  "Wheat": {
+    "scientific": "Triticum aestivum",
+    "growth_days": 110,
+    "optimal_temp": "15–25°C",
+    "rainfall": "450–650 mm",
+    "soil": ["Loamy"],
+    "nutrients": {
+      "Nitrogen": "Medium",
+      "Phosphorus": "Medium",
+      "Potassium": "Low"
+    }
+  },
+  "Maize": {
+    "scientific": "Zea mays",
+    "growth_days": 100,
+    "optimal_temp": "18–32°C",
+    "rainfall": "500–800 mm",
+    "soil": ["Loamy", "Sandy"],
+    "nutrients": {
+      "Nitrogen": "High",
+      "Phosphorus": "Medium",
+      "Potassium": "Medium"
+    }
+  },
+  "Potato": {
+    "scientific": "Solanum tuberosum",
+    "growth_days": 90,
+    "optimal_temp": "15–20°C",
+    "rainfall": "500–700 mm",
+    "soil": ["Sandy", "Loamy"],
+    "nutrients": {
+      "Nitrogen": "Medium",
+      "Phosphorus": "High",
+      "Potassium": "High"
+    }
+  },
+  "Tomato": {
+    "scientific": "Solanum lycopersicum",
+    "growth_days": 75,
+    "optimal_temp": "18–28°C",
+    "rainfall": "400–600 mm",
+    "soil": ["Loamy"],
+    "nutrients": {
+      "Nitrogen": "Medium",
+      "Phosphorus": "Medium",
+      "Potassium": "High"
+    }
+  }
+}

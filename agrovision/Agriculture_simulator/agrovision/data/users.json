@@ -1,0 +1,8 @@
+{
+  "users": [
+    {
+      "username": "ayush",
+      "password_hash": "scrypt:32768:8:1$59jQJyd2I8JPvp8r$8c5574c1164e656078d7017fe4a4d74b869dea2dcaef0cfbe8ac42f4872252d60570e3db0721e7817ee303164a539cad9b106684ccda486d1f707401e36d25be"
+    }
+  ]
+}

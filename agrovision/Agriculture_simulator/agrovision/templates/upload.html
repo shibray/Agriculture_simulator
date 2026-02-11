@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+{% set title = "AgroVision Nepal | Crop Identifier" %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <div>
+    <h2 class="fw-bold mb-0">AI Crop Identifier</h2>
+    <div class="text-muted small">
+      Upload a crop image and let AI analyze leaf texture, color spectrum, and structure.
+    </div>
+  </div>
+
+  <a class="btn btn-outline-light btn-sm" href="{{ url_for('dashboard') }}">
+    ← Dashboard
+  </a>
+</div>
+
+
+<div class="row g-4">
+
+  <!-- LEFT: Upload Form -->
+  <div class="col-lg-6">
+    <div class="card card-agro shadow-sm">
+      <div class="card-body">
+
+        <form id="uploadForm"
+              method="POST"
+              action="{{ url_for('identify_crop') }}"
+              enctype="multipart/form-data">
+
+          <label class="form-label fw-semibold">Upload Crop Image</label>
+          <input class="form-control"
+                 type="file"
+                 name="image"
+                 accept="image/*"
+                 required>
+
+          <div class="d-grid mt-3">
+            <button class="btn btn-success">
+              Analyze Crop
+            </button>
+          </div>
+
+        </form>
+
+        <!-- AI Analyzing Animation -->
+        <div id="analyzingBox" class="mt-4 d-none">
+          <div class="d-flex align-items-center gap-2">
+            <div class="spinner-border spinner-border-sm text-success"></div>
+            <div class="fw-semibold">AI analyzing...</div>
+          </div>
+
+          <div class="progress mt-2" style="height: 8px;">
+            <div id="analyzeBar"
+                 class="progress-bar bg-success"
+                 style="width: 0%"></div>
+          </div>
+
+          <div class="text-muted small mt-2">
+            Detecting patterns and comparing with trained dataset...
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- RIGHT: Result -->
+  <div class="col-lg-6">
+    <div class="card card-agro shadow-sm h-100">
+      <div class="card-body">
+
+        {% if result %}
+
+          <h5 class="fw-bold mb-3">Identification Result</h5>
+
+          <div class="mb-2">
+            <span class="badge text-bg-success">Crop</span>
+            <span class="ms-2 fw-semibold">{{ result.crop }}</span>
+          </div>
+
+          <div class="mb-2">
+            <span class="badge text-bg-secondary">Scientific Name</span>
+            <span class="ms-2">{{ result.scientific }}</span>
+          </div>
+
+          <div class="mb-3">
+            <span class="badge text-bg-info">Confidence</span>
+            <span class="ms-2">{{ result.confidence }}%</span>
+          </div>
+
+          <!-- View Growth Plan Button -->
+          <div class="d-grid mb-3">
+            <a class="btn btn-success"
+               href="{{ url_for('growth', crop_name=result.crop) }}">
+              View Growth Plan →
+            </a>
+          </div>
+
+          <!-- Image Preview -->
+          {% if result.image_url %}
+            <img src="{{ result.image_url }}"
+                 class="img-fluid rounded-3 border border-light border-opacity-10">
+          {% endif %}
+
+          <hr class="border-secondary-subtle">
+
+          <div class="small text-muted">
+            <div class="fw-semibold text-light mb-1">
+              How AI made this decision:
+            </div>
+            <ul class="mb-0">
+              <li>Analyzed leaf structure and vein patterns.</li>
+              <li>Compared color spectrum to trained dataset.</li>
+              <li>Closest ImageNet match: {{ result.raw_label }}</li>
+            </ul>
+          </div>
+
+        {% else %}
+          <div class="text-muted">
+            Upload an image to see AI prediction results here.
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- Script for Analyzing Animation -->
+<script>
+  const form = document.getElementById("uploadForm");
+  const box = document.getElementById("analyzingBox");
+  const bar = document.getElementById("analyzeBar");
+
+  if (form) {
+    form.addEventListener("submit", () => {
+      box.classList.remove("d-none");
+
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 10) + 5;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+        }
+        bar.style.width = progress + "%";
+      }, 120);
+    });
+  }
+</script>
+
+{% endblock %}
